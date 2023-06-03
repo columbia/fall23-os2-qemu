@@ -1,0 +1,20 @@
+stages:
+  - build
+
+rpi4b_vspells_build:
+  stage: build
+  image: "debian:stable"
+
+  script:
+    - dpkg --add-architecture arm64
+    - apt update
+    - apt install -y git build-essential zlib1g-dev ninja-build binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu libglib2.0-dev:arm64 libfdt-dev:arm64 libpixman-1-dev:arm64 zlib1g-dev:arm64 python2.7 checkinstall
+    - mkdir -p /usr/local/var
+    - mkdir /usr/local/libexec
+    - ./configure --target-list=aarch64-softmmu --disable-werror --python=`which python2.7` --cross-prefix=aarch64-linux-gnu-
+    - make -j$(nproc)
+    - checkinstall -D --install=no -y --pkgname qemu-sekvm --pkgversion 0.0.1 -A arm64
+
+  artifacts:
+    paths:
+      - qemu-sekvm_0.0.1-1_arm64.deb
